@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <filesystem>
+#include <fstream>
 #include <sstream>
 #include <locale>
 #include <codecvt>
@@ -34,6 +35,7 @@ class extractor
         string getDesktopPathString();
 };
 
+
 extractor::extractor(){
     localAppdataPath = 0;
     desktopPath = 0;
@@ -42,24 +44,25 @@ extractor::extractor(){
     preparedDesktopPath = prepareDesktopPath();
 }
 
-extractor::~extractor(){
 
-}
+extractor::~extractor(){}
+
 
 void extractor::loadAppdataPath(){
     if(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &localAppdataPath) == S_OK){
-        cout << "\nSuccesfully obtained user AppData\\Local\\ path." << endl;
+        cout << "Succesfully obtained user \\AppData\\Local\\ path." << endl;
     } else {
-        cout << "\nERROR: Unable to obtain user AppData\\Local\\ path." << endl;
+        cout << "ERROR: Unable to obtain user \\AppData\\Local\\ path." << endl;
         exit(1);
     }
 }
 
+
 void extractor::loadDesktopPath(){
     if(SHGetKnownFolderPath(FOLDERID_Desktop, 0, NULL, &desktopPath) == S_OK){
-        cout << "\nSuccesfully obtained user Desktop\\ path." << endl;
+        cout << "Succesfully obtained user \\Desktop\\ path." << endl;
     } else {
-        cout << "\nERROR: Unable to obtain user Desktop\\ path." << endl;
+        cout << "ERROR: Unable to obtain user \\Desktop\\ path." << endl;
         exit(1);
     }
 }
@@ -71,11 +74,13 @@ wstringstream extractor::preparePath(){
     return path;
 }
 
+
 wstringstream extractor::prepareDesktopPath(){
     wstringstream path; 
     path << desktopPath << "\\LockScreenImgs";
     return path;
 }
+
 
 string extractor::getPreparedPathString(){
     wstring path = preparedPath.str();
@@ -95,7 +100,7 @@ string extractor::getDesktopPathString(){
 
 void extractor::createDestinationFolder(string path){
     if(mkdir(path.c_str()) == 0){
-        cout << "NEW FOLDER CREATED \"LockScreenImgs\" on your Desktop!." << endl;
+        cout << "New folder, \"LockScreenImgs\", created on your Desktop." << endl;
     } else {
         cout << "ERROR: Folder unable to be created." << endl;
     }
@@ -103,13 +108,19 @@ void extractor::createDestinationFolder(string path){
 
 
 void extractor::copyFilesToDestination(string fromPath, string toPath){
-    cout << fromPath << endl;
-    for (const auto & entry : fs::directory_iterator(fromPath)){
+    for (const auto & entry : fs::directory_iterator(fromPath, fs::directory_options::skip_permission_denied)){
         if(entry.file_size() > 1000000){
-            cout << entry.path().string() << endl;
-            cout << getDesktopPathString() << endl;
-            fs::copy_file(entry.path().string(), toPath);
-            // STUCK :)
+
+            ifstream source(entry.path().string(), ios::binary);
+            ofstream dest(toPath+"\\"+entry.path().filename().string()+".jpg", ios::binary);
+            
+            istreambuf_iterator<char> begin_source(source);
+            istreambuf_iterator<char> end_source;
+            ostreambuf_iterator<char> begin_dest(dest); 
+            copy(begin_source, end_source, begin_dest);
+
+            source.close();
+            dest.close();
         }
     }
 }

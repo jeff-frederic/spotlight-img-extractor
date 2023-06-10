@@ -4,14 +4,15 @@ using namespace std;
 
 int main() {
   extractor extrctr;
-  cout << "\n\nExtracting data ..." << endl;
-  cout << "\nExtracting from: " << extrctr.getPreparedPathString() << endl;
-  cout << "\nImporting to: " << extrctr.getDesktopPathString() << endl;
+  
+  cout << "\nExtracting data ..." << endl;
+  cout << "Extracting from: " << extrctr.getPreparedPathString() << endl;
+  cout << "Importing to: " << extrctr.getDesktopPathString() << endl << endl;
   
   extrctr.createDestinationFolder(extrctr.getDesktopPathString());
   extrctr.copyFilesToDestination(extrctr.getPreparedPathString(), extrctr.getDesktopPathString());
-
-  cout << "Press ENTER to exit...\n\n";
+  
+  cout << "\nPress ENTER to exit...\n\n";
   cin.ignore(numeric_limits<streamsize>::max(), '\n' );
   return 0;
 }
